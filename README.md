@@ -12,20 +12,22 @@
 ### Some sample commands for testing and GUI demo
 
 #### Search
-Run autograder
+Run autograder  
 `python autograder.py`
-Run pacman with A* agent, in bigMaze, using manhattan distance as heuristic
+Run pacman with A* agent, in bigMaze, using manhattan distance as heuristic  
 `python pacman.py -l bigMaze -z .5 -p SearchAgent -a fn=astar,heuristic=manhattanHeuristic`
 
 #### Multiagent
-Run autograder
-`python autograder.py`
+Run autograder  
+`python autograder.py`  
 Run pacman with minimax agent, in smallClassic maze
 `python pacman.py -p AlphaBetaAgent -l smallClassic`
 
 #### Reinforcement
+Run autograder    
+`python autograder.py`  
 
-Run pacman with Q Learning agent, in smallGrid maze, after 2000 trainings
+Run pacman with Q Learning agent, in smallGrid maze, after 2000 trainings  
 `python pacman.py -p PacmanQAgent -x 2000 -n 2010 -l smallGrid `
 
 ----
