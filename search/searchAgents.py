@@ -293,6 +293,16 @@ class CornersProblem(search.SearchProblem):
         # Please add any code here which you would like to use
         # in initializing the problem
         "*** YOUR CODE HERE ***"
+        # state is a tuple of (position, tuple of corners reached)
+
+        # use set for corners visited to avoid duplicate
+        corners_visited = ()
+
+        # if pacman start from a corners -> add that corner to visited
+        if self.startingPosition in self.corners:
+            corners_visited = corners_visited + (self.startingPosition,)
+
+        self.startState = (self.startingPosition, corners_visited)
 
     def getStartState(self):
         """
@@ -300,6 +310,8 @@ class CornersProblem(search.SearchProblem):
         space)
         """
         "*** YOUR CODE HERE ***"
+        # return re-defined start state
+        return self.startState
         util.raiseNotDefined()
 
     def isGoalState(self, state):
@@ -307,6 +319,8 @@ class CornersProblem(search.SearchProblem):
         Returns whether this search state is a goal state of the problem.
         """
         "*** YOUR CODE HERE ***"
+        # end when 4 corners is reached
+        return len(state[1]) == 4
         util.raiseNotDefined()
 
     def getSuccessors(self, state):
@@ -321,6 +335,7 @@ class CornersProblem(search.SearchProblem):
         """
 
         successors = []
+        # loop through possible action to generate successors
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
             # Add a successor state to the successor list if the action is legal
             # Here's a code snippet for figuring out whether a new position hits a wall:
@@ -330,6 +345,26 @@ class CornersProblem(search.SearchProblem):
             #   hitsWall = self.walls[nextx][nexty]
 
             "*** YOUR CODE HERE ***"
+            curr_pos, corners_visited = state
+            x, y = curr_pos
+            dx, dy = Actions.directionToVector(action)
+            # get position after action
+            nextx, nexty = int(x + dx), int(y + dy)
+            hitsWall = self.walls[nextx][nexty]
+
+            # if action is valid (does not hit wall) -> add it to successors
+            if not hitsWall:
+                next_pos = (nextx, nexty)
+                action_taken = action
+                action_cost = 1
+                corners_reached = corners_visited
+
+                # update the list of corners visited if the new state is a corner
+                if next_pos in self.corners and next_pos not in corners_reached:
+                    corners_reached = corners_reached + (next_pos,)
+
+                # add new state as a successor
+                successors.append(((next_pos, corners_reached), action_taken, action_cost))
 
         self._expanded += 1 # DO NOT CHANGE
         return successors
@@ -365,7 +400,56 @@ def cornersHeuristic(state, problem):
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
     "*** YOUR CODE HERE ***"
-    return 0 # Default to trivial solution
+
+    def manhattan_dist(curr, goal):
+        """helper function to find manhattan distance between 2 points"""
+        return abs(curr[0] - goal[0]) + abs(curr[1] - goal[1])
+
+    def remaining_distance(curr_pos, visited_corners):
+        """
+            function to get total distance from current position to all corner,
+            with the problem relaxation is that agent can move over walls
+
+            heuristics evaluation:
+            - admissible - as it is the path does not consider cost to avoid wall
+                                while reaching each corner -> underestimate true cost
+            - consistent - as this is an estimation for remaining total distance
+                        -> never drop more than action cost (h* + step cost >= h where h is successor heuristics)
+
+        """
+        if len(visited_corners) == 4:
+            # base case/ handle end state
+            return 0
+
+        # choose nearest corner to visit next
+        nearest_corner = None
+        nearest_distance = 0
+        for corner in corners:
+
+            # get nearest, unvisited corner to go next
+            if corner not in visited_corners:
+                curr_dist = manhattan_dist(curr_pos, corner)
+                # update nearest corner and nearest distance
+                if nearest_distance == 0:
+                    nearest_corner = corner
+                    nearest_distance = curr_dist
+                else:
+                    if nearest_distance > curr_dist:
+                        nearest_distance = curr_dist
+                        nearest_corner = corner
+        # recursive call to find distance to remaining corners
+        return nearest_distance + remaining_distance(nearest_corner, visited_corners + (nearest_corner,))
+
+    if problem.isGoalState(state):
+        # return 0 for goal state
+        return 0
+
+    curr_pos, visited_corners = state
+
+    # heuristics is the total distance to travel all 4 corners of a relaxed (simplified) problem
+    heuristics = remaining_distance(curr_pos, visited_corners)
+    return heuristics
+
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
@@ -459,7 +543,24 @@ def foodHeuristic(state, problem):
     """
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
-    return 0
+
+    if problem.isGoalState(state):
+        # return 0 for goal state
+        return 0
+
+    """
+        heuristics chosen: maze distance to the furthest food (using prebuilt maze distance)
+        - consistent: heuristics is consistent since it always consider the max path to any food
+        - admissible: only consider path to furthest food (relaxation: assuming all other food would
+         be on the path to furthest food) -> underestimate true cost 
+        - minimizing expansion node: maze distance takes walls into consideration -> cost of walls included
+    """
+    furthest_dist = 0
+    for food in foodGrid.asList():
+        if furthest_dist < mazeDistance(food, position, problem.startingGameState):
+            furthest_dist = mazeDistance(food, position, problem.startingGameState)
+
+    return furthest_dist
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
@@ -490,6 +591,8 @@ class ClosestDotSearchAgent(SearchAgent):
         problem = AnyFoodSearchProblem(gameState)
 
         "*** YOUR CODE HERE ***"
+        # use A-star search to ensure finding path to closest food
+        return search.astar(problem)
         util.raiseNotDefined()
 
 class AnyFoodSearchProblem(PositionSearchProblem):
@@ -526,6 +629,8 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         x,y = state
 
         "*** YOUR CODE HERE ***"
+        # goal is to reach any of the food
+        return state in self.food.asList()
         util.raiseNotDefined()
 
 def mazeDistance(point1, point2, gameState):
@@ -575,9 +680,10 @@ class CapsuleSearchProblem:
         Your goal checking for the CapsuleSearchProblem goes here.
         """
         "*** YOUR CODE HERE ***"
-
-        self.startState = ()
-
+        self.startingGameState = startingGameState
+        self.capsules = startingGameState.getCapsules()
+        # start state is a tuple of (current_position: Tuple, reached_capsule: Bool, foodGrid: Grid)
+        self.startState = (startingGameState.getPacmanPosition(), False, startingGameState.getFood())
 
     def getStartState(self):
         return self.startState
@@ -587,7 +693,8 @@ class CapsuleSearchProblem:
         Your goal checking for the CapsuleSearchProblem goes here.
         """
         "*** YOUR CODE HERE ***"
-        return False
+        # goal is reached when there is no food left
+        return state[2].count() == 0
 
     def getSuccessors(self, state):
 
@@ -596,7 +703,32 @@ class CapsuleSearchProblem:
         """
         Your getSuccessors function for the CapsuleSearchProblem goes here.
         """
+
         "*** YOUR CODE HERE ***"
+
+        """
+        get successor would be similar to food search problem,the changes are: 
+        - state to keep track of whether capsule is consumed
+        - if a capsule is not consumed, food would not be consumed (no update to food grid)
+        """
+        for direction in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
+            x, y = state[0]
+            dx, dy = Actions.directionToVector(direction)
+            nextx, nexty = int(x + dx), int(y + dy)
+            if not self.walls[nextx][nexty]:
+                capsule_consumed = state[1]
+                # condition to check whether a capsule is consumed
+                if (nextx, nexty) in self.capsules:
+                    capsule_consumed = True
+
+                # update food grid based on whether a capsule is consumed
+                nextFood = state[2].copy()
+                if capsule_consumed == True:
+                    # only update food grid if a capsule is already consumed
+                    nextFood[nextx][nexty] = False
+
+                next_state = ((nextx, nexty), capsule_consumed, nextFood)
+                successors.append((next_state, direction, 1))
 
         return successors
 
@@ -623,4 +755,25 @@ def capsuleProblemHeuristic(state, problem):
     """
     "*** YOUR CODE HERE ***"
 
-    return 0
+    """
+        Problem relaxation: pacman does not have to consume capsule before getting the food
+                
+        Heuristics applied: distance to the furthest food (the same as food problem heuristics)
+    """
+
+    if problem.isGoalState(state):
+        return 0
+
+    position, capsule_consumed, foodGrid = state
+
+    # if not capsule_consumed:
+    #     min_capsule_dist = 99999999
+    #     for capsule in problem.capsules:
+    #         min_capsule_dist = min(mazeDistance(capsule, position, problem.startingGameState), min_capsule_dist)
+    #     return min_capsule_dist
+
+    max_food_dist = 0
+    for food in foodGrid.asList():
+        max_food_dist = max(mazeDistance(position, food, problem.startingGameState), max_food_dist)
+
+    return max_food_dist

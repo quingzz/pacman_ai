@@ -20,49 +20,64 @@
 # value iteration.
 
 def question2():
+    # to reach the end -> must have low noise to avoid cells with -100 
+    # high discount to account for reward at the end
     answerDiscount = 0.9
-    answerNoise = 0.2
+    answerNoise = 0.01
     return answerDiscount, answerNoise
 
 def question3a():
-    answerDiscount = None
-    answerNoise = None
-    answerLivingReward = None
+    # risk the cliff -> low noise 
+    # prefer close exit -> low living reward and low discount (prioritize current reward instead of future reward)
+    answerDiscount = 0.2
+    answerNoise = 0
+    answerLivingReward = 0
     return answerDiscount, answerNoise, answerLivingReward
     # If not possible, return 'NOT POSSIBLE'
 
 def question3b():
-    answerDiscount = None
-    answerNoise = None
-    answerLivingReward = None
+    # avoid cliff -> high noise
+    # prefer close exit -> low living reward and low discount
+    answerDiscount = 0.5
+    answerNoise = 0.3
+    answerLivingReward = -1
     return answerDiscount, answerNoise, answerLivingReward
     # If not possible, return 'NOT POSSIBLE'
 
 def question3c():
-    answerDiscount = None
-    answerNoise = None
-    answerLivingReward = None
+    # risk cliff -> low noise
+    # distant exit -> high living reward and high discount
+    answerDiscount = 0.5
+    answerNoise = 0.01
+    answerLivingReward = 1
     return answerDiscount, answerNoise, answerLivingReward
     # If not possible, return 'NOT POSSIBLE'
 
 def question3d():
-    answerDiscount = None
-    answerNoise = None
-    answerLivingReward = None
+    # avoid cliff -> higher noise
+    # distant exit -> high living reward and discount
+    answerDiscount = 0.6
+    answerNoise = 0.3
+    answerLivingReward = 1
     return answerDiscount, answerNoise, answerLivingReward
     # If not possible, return 'NOT POSSIBLE'
 
 def question3e():
-    answerDiscount = None
-    answerNoise = None
-    answerLivingReward = None
+    # avoid exit -> 0 discount reward (does not consider future reward) + negative living reward
+    # avoid cliff -> high noise
+    answerDiscount = 0
+    answerNoise = 0.4
+    answerLivingReward = -1
     return answerDiscount, answerNoise, answerLivingReward
     # If not possible, return 'NOT POSSIBLE'
 
-def question8():
-    answerEpsilon = None
-    answerLearningRate = None
-    return answerEpsilon, answerLearningRate
+def question6():
+    # answerEpsilon = None
+    # answerLearningRate = None
+    # return answerEpsilon, answerLearningRate
+    return "NOT Possible"
+    # not possible because to find optimal path 99%, 50 episode is too small
+    # it needs more episode to clearly explore
     # If not possible, return 'NOT POSSIBLE'
 
 if __name__ == '__main__':

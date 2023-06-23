@@ -110,7 +110,7 @@ class ValueIterationAgent(ValueEstimationAgent):
                                         self.discount*self.values[succ_state])
 
         return q_value
-        util.raiseNotDefined()
+        # util.raiseNotDefined()
 
     def computeActionFromValues(self, state):
         """
@@ -133,7 +133,7 @@ class ValueIterationAgent(ValueEstimationAgent):
         optimal_act = q_values.index(max(q_values))
 
         return possible_actions[optimal_act]
-        util.raiseNotDefined()
+        # util.raiseNotDefined()
 
     def getPolicy(self, state):
         return self.computeActionFromValues(state)
@@ -190,7 +190,6 @@ class AsynchronousValueIterationAgent(ValueIterationAgent):
             new_qs = [self.computeQValueFromValues(update_state, action) for action in possible_actions]
 
             self.values[update_state] = max(new_qs)
-        
 
 class PrioritizedSweepingValueIterationAgent(AsynchronousValueIterationAgent):
     """
@@ -255,11 +254,10 @@ class PrioritizedSweepingValueIterationAgent(AsynchronousValueIterationAgent):
             # push state and diff to priority queue
             queue.push(state, -diff)
             
-            
+        # update iterations
         for i in range(self.iterations):
             if queue.isEmpty():
                 break
-            
             state = queue.pop()
             if self.mdp.isTerminal(state):
                 continue
@@ -278,10 +276,3 @@ class PrioritizedSweepingValueIterationAgent(AsynchronousValueIterationAgent):
                     # save best_q to later update
                     state_q[predecessor] = best_q
                     queue.update(predecessor, -diff)
-                
-
-                
-                            
-                         
-            
-
