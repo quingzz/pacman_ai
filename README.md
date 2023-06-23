@@ -13,13 +13,15 @@
 
 #### Search
 Run autograder  
-`python autograder.py`
+`python autograder.py`   
+
 Run pacman with A* agent, in bigMaze, using manhattan distance as heuristic  
 `python pacman.py -l bigMaze -z .5 -p SearchAgent -a fn=astar,heuristic=manhattanHeuristic`
 
 #### Multiagent
 Run autograder  
 `python autograder.py`  
+
 Run pacman with minimax agent, in smallClassic maze
 `python pacman.py -p AlphaBetaAgent -l smallClassic`
 
