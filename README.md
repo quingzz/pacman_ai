@@ -22,14 +22,15 @@ Run pacman with A* agent, in bigMaze, using manhattan distance as heuristic
 Run autograder  
 `python autograder.py`  
 
-Run pacman with minimax agent, in smallClassic maze
+Run pacman with minimax agent, in smallClassic maze  
 `python pacman.py -p AlphaBetaAgent -l smallClassic`
 
 #### Reinforcement
 Run autograder    
 `python autograder.py`  
 
-Run pacman with Q Learning agent, in smallGrid maze, after 2000 trainings  
+Run pacman 
+game 10 times with Q Learning agent, in smallGrid maze, after 2000 trainings  
 `python pacman.py -p PacmanQAgent -x 2000 -n 2010 -l smallGrid `
 
 ----
